@@ -11,7 +11,7 @@ def article_list():
 
     context['article_list'] = Article.query.order_by(desc(Article.date_created)).all()
 
-    return render_template('home.html', context=context, active_tab='article_list')
+    return render_template('home.html', context=context, active_tab='timeline')
 
 
 @app.route('/article/create/', methods=['GET', 'POST'])

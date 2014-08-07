@@ -4,7 +4,7 @@
 			<a class="navbar-brand" href="{{ url_for('article_list') }}">Likelion</a>
 		</div>
 		<ul class="nav navbar-nav">
-			<li {% if active_tab == 'article_list' %} class="active" {% endif %}>
+			<li {% if active_tab == 'timeline' %} class="active" {% endif %}>
 				<a href="{{ url_for('article_list') }}">타임라인</a>
 			</li>
 			<li {% if active_tap == 'article_create' %} class="active" {% endif %}>
