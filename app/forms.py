@@ -49,3 +49,40 @@ class CommentForm(Form):
         [validators.data_required(u'이메일을 입력하시기 바랍니다.')],
         description={'placeholder': u'이메일을 입력하세요.'}
     )
+
+
+class JoinForm(Form):
+    email = EmailField(
+        u'이메일',
+        [validators.data_required(u'이메일을 입력하시기 바랍니다.')],
+        description={'placeholder': u'이메일을 입력하세요.'}
+    )
+    password = PasswordField(
+        u'비밀번호',
+        [validators.data_required(u'비밀번호를 입력하시기 바랍니다.'),
+        validators.EqualTo('confirm_password', message=u'비밀번호가 일치하지 않습니다.')],
+        description={'placeholder': u'비밀번호를 입력하세요.'}
+    )
+    confirm_password = PasswordField(
+        u'비밀번호',
+        [validators.data_required(u'비밀번호를 입력하시기 바랍니다.')],
+        description={'placeholder': u'비밀번호를 입력하세요.'}
+    )
+    name = StringField(
+        u'이름',
+        [validators.data_required(u'이름을 입력하시기 바랍니다.')],
+        description={'placeholder': u'이름을 입력하세요.'}
+    )
+
+
+class LoginForm(Form):
+    email = EmailField(
+        u'이메일',
+        [validators.data_required(u'이메일을 입력하시기 바랍니다.')],
+        description={'placeholder': u'이메일을 입력하세요.'}
+    )
+    password = PasswordField(
+        u'비밀번호',
+        [validators.data_required(u'비밀번호를 입력하시기 바랍니다.')],
+        description={'placeholder': u'비밀번호를 입력하세요.'}
+    )

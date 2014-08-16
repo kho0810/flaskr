@@ -6,6 +6,13 @@
         <ul class="nav navbar-nav">
             <li{% if active_tab == 'timeline' %} class="active"{% endif %}><a href="{{ url_for('article_list') }}">타임라인</a></li>
             <li{% if active_tab == 'article_create' %} class="active"{% endif %}><a href="{{ url_for('article_create') }}">글쓰기</a></li>
+            <li{% if active_tab == 'register' %} class="active"{% endif %}><a href="{{ url_for('register') }}">회원가입</a></li>
+            {% if g.user_name %}
+                <li{% if active_tab == 'logout' %} class="active"{% endif %}><a href="{{ url_for('logout') }}">로그아웃</a></li>
+                <li><a href="#">{{ g.user_name }}님 안녕하세요.</a></li>
+            {% else %}
+                <li{% if active_tab == 'login' %} class="active"{% endif %}><a href="{{ url_for('login') }}">로그인</a></li>
+            {% endif %}
         </ul>
     </div>
 </nav>

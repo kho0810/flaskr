@@ -20,3 +20,12 @@ class Comment(db.Model):
     password = db.Column(db.String(255))
     content = db.Column(db.Text())
     date_created = db.Column(db.DateTime(), default=db.func.now())
+    like = db.Column(db.Integer)
+
+
+class UserInfo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255))
+    password = db.Column(db.String(255))
+    name = db.Column(db.String(255))
+    date_created = db.Column(db.DateTime(), default=db.func.now())

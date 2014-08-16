@@ -2,6 +2,7 @@
 
 {% block contents %}
     <div class="llArticleList">
+        <div class="more">총 게시물수: </div>
         {% if context.article_list %}
             {% for article in context.article_list %}
                 <div class="well" id="article_{{ article.id }}">
@@ -14,6 +15,11 @@
                     </p>
                 </div>
             {% endfor %}
+            
+            <div class="row">
+                <div class="col-sm-12" id="more_data"></div>
+                <div class="col-sm-12"><button class="btn btn-default" id="more_btn">더 보기</button></div>
+            </div>
         {% else %}
             <div class="no-list">
                 글이 존재하지 않습니다. 새로운 글을 등록해주세요.
