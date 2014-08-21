@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block layout %}
+
+    <div class="container">
+        <div id="chat_login" class="row">
+            <h1>Mini chat</h1>
+            <input type="text" id="chat_name" placeholder="name">
+            <input type="button" id="login_send" value="login">
+        </div>
+        <br>
+
+        <div id="chat_display">
+            <div class="row">
+                <div class="col-sm-8" id="chat_room"></div>
+                <div class="col-sm-4" id="member_room">
+                    <h1 text-align="center">접속자</h1>
+                    <ul id="members"></ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-offset-1">
+                    <br>
+                    <input type="text" id="chat_msg" placeholder="message" size="60">
+                    <input type="button" id="send" value="submit">
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

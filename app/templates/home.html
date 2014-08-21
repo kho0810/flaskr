@@ -2,7 +2,7 @@
 
 {% block contents %}
     <div class="llArticleList">
-        <div class="more">총 게시물수: </div>
+        <div id="more">총 게시물수: </div>
         {% if context.article_list %}
             {% for article in context.article_list %}
                 <div class="well" id="article_{{ article.id }}">

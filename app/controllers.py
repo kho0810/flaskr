@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
-from flask import render_template, Flask, request, redirect, url_for, flash, g, session
+from flask import render_template, Flask, request, redirect, url_for, flash, g, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import desc
 from app import app, db
 from app.models import Article, Comment, UserInfo
 from app.forms import ArticleForm, CommentForm, JoinForm, LoginForm
+import pusher
+from datetime import datetime
+from time import time
 
 
 @app.before_request
@@ -13,13 +16,15 @@ def before_request():
 
     if 'user_id' in session:
         g.user_name = session['user_name']
+        g.user_id = session['user_id']
+        g.user_email = session['user_email']
 
 
 @app.route('/', methods=['GET'])
 def article_list():
     context = {}
 
-    context['article_list'] = Article.query.order_by(desc(Article.date_created)).all()
+    context['article_list'] = Article.query.order_by(desc(Article.date_created)).limit(3)
 
     return render_template('home.html', context=context, active_tab='timeline')
 
@@ -37,7 +42,8 @@ def article_create():
 
                 article = Article(
                     title=form.title.data,
-                    author=form.author.data,
+                    # author=form.author.data,
+                    author=g.user_name,
                     category=form.category.data,
                     content=form.content.data
                 )
@@ -52,10 +58,14 @@ def article_create():
 
 @app.route('/article/detail/<int:id>', methods=['GET'])
 def article_detail(id):
-    article = Article.query.get(id)
+    if g.user_name is None:
+        flash(u'로그인 후에 이용해 주세요', 'danger')
+        return redirect(url_for('login'))
+    else:
+        article = Article.query.get(id)
 
-    comments = article.comments.order_by(desc(Comment.date_created)).all()
-    return render_template('article/detail.html', article=article, comments=comments)
+        comments = article.comments.order_by(desc(Comment.date_created)).all()
+        return render_template('article/detail.html', article=article, comments=comments)
 
 
 @app.route('/article/update/<int:id>', methods=['GET', 'POST'])
@@ -93,8 +103,10 @@ def comment_create(article_id):
     if request.method == 'POST':
         if form.validate_on_submit():
             comment = Comment(
-                author=form.author.data,
-                email=form.email.data,
+                # author=form.author.data,
+                # email=form.email.data,
+                author=g.user_name,
+                email=g.user_email,
                 content=form.content.data,
                 password=form.password.data,
                 article=Article.query.get(article_id),
@@ -143,7 +155,7 @@ def register():
 
             if db.session.query(UserInfo).filter(UserInfo.email == form.email.data).count() > 0:
                 flash(u'이미 가입한 이메일입니다.', 'danger')
-                return render_template('login/register.html', form=form, active_tab=register)
+                return render_template('login/register.html', form=form, active_tab='register')
             else:
                 new_user = UserInfo(
                     email=form.email.data,
@@ -170,6 +182,7 @@ def login():
                 # login success
                 session['user_id'] = user.id
                 session['user_name'] = user.name
+                session['user_email'] = user.email
 
                 return redirect(url_for('article_list'))
             else:
@@ -181,6 +194,117 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for('article_list'))
+
+
+@app.route('/ajax/article_count')
+def article_count():
+    count = db.session.query(Article).count()
+    return jsonify(count=count)
+
+
+@app.route('/ajax/article_more')
+def article_more():
+    current_row = int(request.args.get('current_row'))
+    row = int(request.args.get('count'))
+
+    # more_data = db.session.query(Article).order_by(desc(Article.date_created))[current_row:current_row + 3]
+    more_data = db.session.query(Article).order_by(desc(Article.date_created)).offset(current_row).limit(3)
+
+    resp = {}
+    resp['data'] = []
+    temp = {}
+    for article in more_data:
+        temp['id'] = article.id
+        temp['title'] = article.title
+        temp['content'] = article.content
+        temp['author'] = article.author
+        temp['category]'] = article.category
+        temp['date_created'] = article.date_created
+
+        resp['data'].append(temp)
+        temp = {}
+
+    return jsonify(resp)
+
+
+@app.route('/chat', methods=['GET'])
+def chat():
+    p = pusher.Pusher(
+        app_id='86070',
+        key='62270f36d7ecf7bf7ef0',
+        secret='46b772c92bcc9d25fae9'
+    )
+    p['test_channel'].trigger('my_event', {
+        'name': g.user_name,
+        'msg': request.args.get('msg_data')
+    })
+    return ""
+
+
+@app.route('/mini_chat')
+def mini_chat():
+    if g.user_name is None:
+        flash(u'로그인 후에 이용해 주세요', 'danger')
+        return redirect(url_for('login'))
+    else:
+        return render_template("mini_chat.html", active_tab="mini_chat")
+
+
+@app.route('/chat2', methods=['GET'])
+def chat2():
+    p = pusher.Pusher(
+        app_id='86070',
+        key='62270f36d7ecf7bf7ef0',
+        secret='46b772c92bcc9d25fae9'
+    )
+
+    msg = request.args.get('msg_data')
+    t = time()
+    st = datetime.fromtimestamp(t).strftime('%Y-%m-%d %H:%M:%S')
+    username = session['username']
+
+    p['presence-hyu'].trigger('my_event', {
+        'name': username,
+        'msg': msg,
+        'time': st
+    })
+    return jsonify(success=True)
+
+
+@app.route('/mini_chat2')
+def mini_chat2():
+    return render_template("mini_chat2.html")
+
+
+@app.route('/login_chat', methods=["POST"])
+def login_chat():
+    chat_name = request.form.get('id')
+
+    resp = {}
+    resp["success"] = True
+    resp["chat_name"] = chat_name
+    session["username"] = chat_name
+
+    return jsonify(resp)
+
+
+@app.route('/pusher/auth', methods=["POST"])
+def push_auth():
+    p = pusher.Pusher(
+        app_id='86070',
+        key='62270f36d7ecf7bf7ef0',
+        secret='46b772c92bcc9d25fae9'
+    )
+    socket_id = request.form.get('socket_id')
+    channel_name = request.form.get('channel_name')
+    username = session["username"]
+
+    # channel_data = {'user_id': socket_id}
+    channel_data = {'user_id': username}
+    channel_data['user_info'] = {'username': username}
+    response = p[channel_name].authenticate(socket_id, channel_data)
+
+    return jsonify(response)
 
 
 #

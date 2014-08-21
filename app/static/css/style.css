@@ -2,3 +2,14 @@
     padding: 10px;
     text-align: center;
 }
+
+#chat_room, #member_room {
+    border-style: solid;
+    height: 300px;
+    overflow: scroll;
+    word-wrap: break-word;
+}
+
+#chat_display {
+    display: none;
+}
